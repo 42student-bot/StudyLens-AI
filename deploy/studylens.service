@@ -1,0 +1,25 @@
+[Unit]
+Description=StudyLens AI backend (Messenger)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=studylens
+Group=studylens
+WorkingDirectory=/opt/studylens
+EnvironmentFile=/etc/studylens/env
+ExecStart=/opt/studylens/.venv/bin/uvicorn app.main:app_factory --factory --host 127.0.0.1 --port 8000 --proxy-headers --workers 1
+Restart=on-failure
+RestartSec=5
+
+# Durcissement
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/studylens
+StateDirectory=studylens
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=multi-user.target

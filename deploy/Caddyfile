@@ -1,0 +1,8 @@
+# Remplacez par VOTRE nom de domaine (il doit pointer vers l'IP publique de la VM).
+# Caddy obtient et renouvelle seul le certificat HTTPS exigé par Meta.
+studylens.example.org {
+	request_body {
+		max_size 2MB
+	}
+	reverse_proxy 127.0.0.1:8000
+}
