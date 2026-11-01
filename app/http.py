@@ -39,6 +39,8 @@ class HttpClient(Protocol):
         *,
         headers: Mapping[str, str] | None = None,
         json: Any = None,
+        data: Any = None,
+        files: Any = None,
         timeout: float = 30.0,
         max_bytes: int | None = None,
     ) -> HttpResponse: ...
@@ -54,13 +56,15 @@ class RequestsHttp:
         self._requests = requests
         self._session = requests.Session()
 
-    def request(self, method, url, *, headers=None, json=None, timeout=30.0, max_bytes=None):
+    def request(self, method, url, *, headers=None, json=None, data=None, files=None, timeout=30.0, max_bytes=None):
         try:
             resp = self._session.request(
                 method,
                 url,
                 headers=dict(headers or {}),
                 json=json,
+                data=data,
+                files=files,
                 timeout=timeout,
                 allow_redirects=False,
                 stream=True,

@@ -120,6 +120,18 @@ créez une alerte de budget.
   appelé que si le principal échoue, et seulement dans les plafonds.
 - Une session = 1 appel multimodal (toutes les pages) + 1 relecture texte-seule. Naviguer entre les réponses ne rappelle jamais l'IA.
 
+## Réponses visuelles (schémas et tableaux)
+
+Quand la consigne ou la réponse contient des termes comme « schéma », « MLD », « UML » ou « tableau »,
+le backend crée localement une carte PNG avec Pillow et tente de l'envoyer dans Messenger en pièce jointe.
+Ce rendu réutilise la réponse déjà produite : **aucun appel supplémentaire à Groq** n'est effectué.
+La réponse textuelle habituelle reste envoyée, même si le téléversement de l'image échoue.
+
+Il s'agit d'une première version : elle met en page la réponse structurée dans une image, mais ne transforme
+pas encore automatiquement chaque MLD/UML en diagramme sémantique avec des boîtes et des flèches.
+Le service Messenger doit autoriser le téléversement de pièces jointes et les limites de l'offre gratuite
+Northflank restent applicables.
+
 ## Confidentialité
 
 - Photos : supprimées dès l'analyse terminée (`DELETE_IMAGES_AFTER_ANALYSIS`), sinon après 2 h au plus.

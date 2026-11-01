@@ -16,6 +16,7 @@ from collections import defaultdict
 
 from .ai.base import Provider
 from .budget import Budget, BudgetExceeded
+from .answer_images import render_answer, should_render
 from .config import Settings
 from .imaging import ImageError, process_image
 from .messenger import DownloadError, IncomingMessage, MessengerClient
@@ -257,6 +258,16 @@ class Orchestrator:
                 head += f"\n⚠ Page(s) illisible(s) : {pages}. Reprenez-les."
             await self.msg.send_text(psid, head)
             for i, q in enumerate(qs, start=1):
+                # Pour les consignes de schéma/tableau, envoyer aussi une image
+                # lisible générée localement, sans appel supplémentaire à Groq.
+                if should_render(q.text, q.answer):
+                    try:
+                        png = await asyncio.to_thread(render_answer, q.text, q.answer)
+                        sent = await self.msg.send_image(psid, png)
+                        if sent:
+                            await self.msg.send_text(psid, f"Q{i}/{len(qs)} — résultat visuel envoyé.")
+                    except Exception:
+                        log.exception("rendu visuel impossible pour Q%s", i)
                 for m in format_question(q, i, len(qs), self.s.screen_chars, self.s.question_chars):
                     await self.msg.send_text(psid, m)
         for w in result.warnings:

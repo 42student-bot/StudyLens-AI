@@ -103,6 +103,53 @@ class MessengerClient:
             await asyncio.sleep(1.0 * (attempt + 1))
         return False
 
+    async def send_image(self, psid: str, image_bytes: bytes) -> bool:
+        """Téléverse un PNG sur Messenger puis l'envoie comme pièce jointe."""
+        headers = {"Authorization": f"Bearer {self.settings.fb_page_token}"}
+        upload_url = self.settings.graph_url("me/message_attachments")
+        try:
+            uploaded = await asyncio.to_thread(
+                self.http.request,
+                "POST",
+                upload_url,
+                headers=headers,
+                data={"message": __import__("json").dumps({
+                    "attachment": {"type": "image", "payload": {"is_reusable": True}}
+                })},
+                files={"file": ("studylens.png", image_bytes, "image/png")},
+                timeout=30.0,
+            )
+        except Exception as exc:
+            log.warning("téléversement image Messenger impossible (%s)", type(exc).__name__)
+            return False
+        if not uploaded.ok:
+            log.warning("téléversement image Messenger échoué (HTTP %s)", uploaded.status)
+            return False
+        try:
+            attachment_id = uploaded.json().get("attachment_id")
+        except Exception:
+            attachment_id = None
+        if not attachment_id:
+            log.warning("téléversement image Messenger : attachment_id absent")
+            return False
+        payload = {
+            "recipient": {"id": psid},
+            "messaging_type": "RESPONSE",
+            "message": {"attachment": {"type": "image", "payload": {"attachment_id": attachment_id}}},
+        }
+        try:
+            resp = await asyncio.to_thread(
+                self.http.request, "POST", self.settings.graph_url("me/messages"),
+                headers=headers, json=payload, timeout=20.0
+            )
+        except HttpError:
+            log.warning("envoi image Messenger échoué (erreur réseau)")
+            return False
+        if not resp.ok:
+            log.warning("envoi image Messenger échoué (HTTP %s)", resp.status)
+            return False
+        return True
+
     async def download_image(self, url: str) -> bytes:
         if not host_allowed(url, self.settings.image_host_suffixes):
             raise DownloadError("hôte d'image non autorisé")
