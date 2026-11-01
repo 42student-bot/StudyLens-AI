@@ -15,9 +15,35 @@ TRIGGERS = (
 
 
 def should_render(question: str, answer: str) -> bool:
-    """N'illustre que les exercices explicitement orientés schéma/tableau."""
-    text = f"{question}\n{answer}".lower()
-    return any(term in text for term in TRIGGERS)
+    """Envoie une image uniquement si la question demande un schema ou diagramme."""
+    text = question.lower()
+    normalized = text.translate(str.maketrans({
+        "?": "e", "?": "e", "?": "e", "?": "e",
+        "?": "a", "?": "a",
+        "?": "i", "?": "i",
+        "?": "o",
+        "?": "u", "?": "u",
+        "?": "c",
+    }))
+
+    visual_requests = (
+        "schema", "diagramme", "uml", "mld",
+        "modele logique de donnees",
+        "modele relationnel",
+        "vue relationnelle",
+        "schema relationnel",
+        "entite-association",
+        "diagramme de classes",
+        "diagramme de sequence",
+        "diagramme de cas d'utilisation",
+        "diagramme de cas d utilisation",
+        "represente les relations",
+        "dessine les relations",
+        "dessine les entites",
+        "representation graphique",
+    )
+
+    return any(term in normalized for term in visual_requests)
 
 
 def render_answer(question: str, answer: str) -> bytes:
