@@ -29,6 +29,7 @@ def should_render(question: str, answer: str) -> bool:
     visual_requests = (
         "schema", "diagramme", "uml", "mld",
         "modele logique de donnees",
+        "modele logique relationnel",
         "modele relationnel",
         "vue relationnelle",
         "schema relationnel",
